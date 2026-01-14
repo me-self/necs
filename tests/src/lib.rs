@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use necs::{node, Node, NodeTrait, World};
+    use necs::{Node, NodeTrait, World, node};
 
     #[derive(Debug)]
     struct Useless;
@@ -42,7 +42,6 @@ mod tests {
             z: 2,
             bar: 2u32,
         });
-
         // The node can be retrieved as a concrete type.
         let node: Foo<u32> = world.get_node::<Foo<u32>>(node_id);
         println!("node.x: {:?} node.bar: {}", node.x, node.bar);
@@ -68,6 +67,8 @@ mod tests {
             *foo.y = 1;
             println!("Found a Foo");
         }
+        // We can despawn the node like so:
+        world.free_node::<Foo<u32>>(&node_id);
     }
 
     mod flamegraph_test {

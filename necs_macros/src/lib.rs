@@ -438,14 +438,21 @@ impl ToTokens for GeneratedNodeRef {
                     let mini_type_ids = MINI_TYPE_IDS.get().unwrap();
                     #(#field_extractions)*
                     #ident {
+                        // TODO: Move borrowed for the correct drop order.
                         #borrowed
                         #(#field_names,)*
                     }
                 }
 
+                fn __remove_from_storage(storage: &mut ::necs::storage::Storage, id: &::necs::NodeId) {
+                    storage.nodes.free::<Self>(id);
+                    // TODO: also remove components.
+                    //storage.components.remove::<>();
+                }
+
                 fn __register_node(storage: &mut ::necs::storage::Storage) {
                     // Register the node itself.
-                    _ = storage.nodes.register::<Self>();
+                    storage.nodes.register::<Self>();
 
                     // Register every #[ext] field with component storage.
                     _ = MINI_TYPE_IDS.set((#( #component_registrations, )*));

@@ -8,7 +8,7 @@ use std::marker::PhantomPinned;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::{Acquire, Relaxed, Release};
 
-/// For use by the #[node] macro, this drops runtime borrows.
+/// For use by the `#[node]` macro, this drops runtime borrows.
 pub struct BorrowDropper<'a>(&'a AtomicBool, PhantomPinned);
 
 impl<'a> BorrowDropper<'a> {
@@ -79,6 +79,13 @@ impl NodeStorage {
         }
     }
 
+    pub fn free<T>(&mut self, id: &NodeId)
+    where
+        T: NodeRef,
+    {
+        self.nodes.remove::<T, _>(&id.instance)
+    }
+
     /// TODO
     #[allow(clippy::mut_from_ref)] // We do our own borrow checking.
     pub fn get_element<T>(&'_ self, id: NodeId) -> (&'_ mut T::RecipeTuple, BorrowDropper<'_>)
@@ -89,7 +96,7 @@ impl NodeStorage {
             // TODO: ensure a custom NodeId can't be created to avoid a mismatch.
             self.nodes
                 .get_unchecked::<T, _>(id.node_type, id.instance)
-                .unwrap()
+                .unwrap_or_else(|| panic!("node does not exist"))
         };
         match node_cell
             .borrowed
@@ -107,6 +114,17 @@ impl NodeStorage {
         let node_type = self.nodes.mini_type_of::<T>();
         let keys = self.nodes.keys::<T, _>();
         keys.map(move |node_key: &ItemKey| NodeId {
+            node_type,
+            instance: *node_key,
+        })
+    }
+
+    pub fn get_ids_by_mini_type_id(
+        &self,
+        node_type: MiniTypeId,
+    ) -> impl ExactSizeIterator<Item = NodeId> {
+        let keys = unsafe { self.nodes.keys_from_mini_type_id(node_type) };
+        keys.into_iter().map(move |node_key: &ItemKey| NodeId {
             node_type,
             instance: *node_key,
         })

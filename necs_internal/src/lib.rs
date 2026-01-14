@@ -3,24 +3,24 @@
 #![feature(sync_unsafe_cell)]
 #![feature(ptr_as_ref_unchecked)]
 
-use rustc_hash::FxHashMap as HashMap;
 pub use crate::node::{Field, NodeBuilder, NodeId, NodeRef, NodeTrait};
 use crate::trait_map::TraitMap;
 pub use necs_macros::node;
+use rustc_hash::FxHashMap as HashMap;
 use slotmap::SparseSecondaryMap;
 use storage::Storage;
 
 mod component;
 pub use crate::node::Node;
 pub use component::ComponentId;
+pub use relations::Relations;
 pub use storage::BorrowDropper;
 pub use storage::ItemKey;
-pub use relations::Relations;
 
 mod node;
+mod relations;
 pub mod storage;
 mod trait_map;
-mod relations;
 
 pub type SubStorage<T> = SparseSecondaryMap<ItemKey, T>;
 
@@ -58,8 +58,15 @@ impl World {
     }
     pub fn spawn_node<T: NodeBuilder>(&mut self, node: T) -> NodeId {
         let node_id = node.__move_to_storage(&mut self.storage);
-        self.community.insert(node_id.instance, Relations::new(None));
+        self.community
+            .insert(node_id.instance, Relations::new(None));
         node_id
+    }
+    pub fn free_node<T>(&mut self, node_id: &NodeId)
+    where
+        T: NodeRef,
+    {
+        self.storage.nodes.free::<T>(node_id);
     }
     pub fn get_node<T: NodeRef>(&self, id: NodeId) -> T::Instance<'_> {
         // The safety of this entirely depends on everything else not having issues.

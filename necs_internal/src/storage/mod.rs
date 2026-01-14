@@ -3,10 +3,10 @@ mod mini_type_map;
 mod node_storage;
 
 pub(crate) use component_storage::ComponentStorage;
+pub use mini_type_map::ItemKey;
 pub use mini_type_map::MiniTypeId;
 pub use mini_type_map::MiniTypeMap;
 pub use mini_type_map::MiniTypeMapKey;
-pub use mini_type_map::ItemKey;
 pub use node_storage::BorrowDropper;
 pub(crate) use node_storage::NodeStorage;
 
