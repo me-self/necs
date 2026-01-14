@@ -126,7 +126,7 @@ impl TraitMap {
             .expect("Failed to downcast the node to the expected trait object")
     }
 
-    pub fn get_nodes_with_trait<TraitObj: 'static>(&self, storage: &Storage) -> Vec<Box<TraitObj>> {
+    pub fn get_nodes_with_trait<TraitObj: 'static + ?Sized>(&self, storage: &Storage) -> Vec<Box<TraitObj>> {
         let trait_sub_storage = self.get_trait_sub_storage::<TraitObj>();
         let mut nodes = Vec::new();
         for node_type in trait_sub_storage.keys() {
@@ -137,7 +137,7 @@ impl TraitMap {
         nodes
     }
 
-    fn get_trait_sub_storage<Trait: 'static>(
+    fn get_trait_sub_storage<Trait: 'static + ?Sized>(
         &self,
     ) -> &FxHashMap<MiniTypeId, Box<dyn Fn(&Storage, NodeId) -> Box<dyn Any> + Send + Sync>> {
         self.map

@@ -109,6 +109,10 @@ impl World {
     pub fn get_node_resilient<T: 'static + NodeTrait + ?Sized>(&self, id: NodeId) -> Box<T> {
         self.trait_map.get_node::<T>(&self.storage, id)
     }
+
+    pub fn get_nodes_resilient<T: 'static + NodeTrait + ?Sized>(&self) -> Vec<Box<T>> {
+        self.trait_map.get_nodes_with_trait(&self.storage)
+    }
 }
 
 impl Default for World {
