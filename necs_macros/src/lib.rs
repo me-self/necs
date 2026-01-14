@@ -438,6 +438,7 @@ impl ToTokens for GeneratedNodeRef {
                     let mini_type_ids = MINI_TYPE_IDS.get().unwrap();
                     #(#field_extractions)*
                     #ident {
+                        // TODO: Move borrowed for the correct drop order.
                         #borrowed
                         #(#field_names,)*
                     }

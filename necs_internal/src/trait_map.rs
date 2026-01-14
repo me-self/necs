@@ -1,7 +1,7 @@
 use crate::node::{Node, NodeId};
 use crate::storage::{MiniTypeId, Storage};
 use crate::{NodeRef, NodeTrait};
-use rustc_hash::FxHashMap as HashMap;
+use rustc_hash::{FxHashMap as HashMap, FxHashMap};
 use std::any::{Any, TypeId, type_name};
 use std::fmt::{Debug, Formatter};
 use std::mem::transmute;
@@ -124,5 +124,24 @@ impl TraitMap {
         *trait_obj
             .downcast::<Box<Trait>>()
             .expect("Failed to downcast the node to the expected trait object")
+    }
+
+    pub fn get_nodes_with_trait<TraitObj: 'static>(&self, storage: &Storage) -> Vec<Box<TraitObj>> {
+        let trait_sub_storage = self.get_trait_sub_storage::<TraitObj>();
+        let mut nodes = Vec::new();
+        for node_type in trait_sub_storage.keys() {
+            for node_id in storage.nodes.get_ids_by_mini_type_id(*node_type) {
+                nodes.push(self.get_node::<TraitObj>(storage, node_id));
+            }
+        }
+        nodes
+    }
+
+    fn get_trait_sub_storage<Trait: 'static>(
+        &self,
+    ) -> &FxHashMap<MiniTypeId, Box<dyn Fn(&Storage, NodeId) -> Box<dyn Any> + Send + Sync>> {
+        self.map
+            .get(&TypeId::of::<Trait>())
+            .unwrap_or_else(|| panic!("trait {} not registered", type_name::<Trait>()))
     }
 }

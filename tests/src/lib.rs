@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use necs::{node, Node, NodeTrait, World};
+    use necs::{Node, NodeTrait, World, node};
 
     #[derive(Debug)]
     struct Useless;
