@@ -1,7 +1,6 @@
 #![feature(downcast_unchecked)]
 #![feature(unsafe_cell_access)]
 #![feature(sync_unsafe_cell)]
-#![feature(ptr_as_ref_unchecked)]
 
 pub use crate::node::{Field, NodeBuilder, NodeId, NodeRef, NodeTrait};
 use crate::trait_map::TraitMap;
